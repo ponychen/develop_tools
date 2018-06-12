@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ -d ".git" ]; then
+    count=`git stash list | wc -l`
+    if [ "$#" -eq 1 ] && [[ $1 =~ ^[\-0-9]+$ ]]; then
+        if [ $1 -ge 0 -a $1 -lt $count ]; then
+            git show stash@{$1}
+        else
+            echo "Input is not in the range of stash list"
+        fi
+    elif [ "$#" -eq 1 ] && [[ $1 =~ "list" ]]; then
+        git stash list
+    else
+        IFS=$'\n' stash_list=`git stash list`
+        for stash in $stash_list
+        do
+            echo $stash | sed -E 's/(stash@{.*}):.*/\1/g' | xargs git show
+        done
+    fi
+else
+    echo "Not a git repo"
+fi
