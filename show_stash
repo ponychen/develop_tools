@@ -1,4 +1,13 @@
 #!/bin/sh
+# Usage:
+#
+#   show_stash
+#       show all stash changed       
+#   show_stash list
+#       equal to `git stash list`
+#   show_stash 3
+#       equal to `git show stash@{3}`
+
 
 if [ -d ".git" ]; then
     count=`git stash list | wc -l`
