@@ -1,0 +1,53 @@
+# check if device is connect
+device_count=$(adb devices -l | grep -w -c transport_id)
+if [ $device_count -eq 0 ]; then
+    echo "device not found"
+    exit 0
+else
+    echo "device count: ${device_count}"
+fi
+
+IFS=$'\n' models=($(adb devices -l | grep transport_id | awk '{print $1, $5}'))
+device=($(adb devices -l | grep transport_id | tr -s ' ' | cut -d' ' -f1))
+serial=${device[0]}
+
+if [ $device_count -gt 1 ]; then
+    i=0
+    for model in "${models[@]}"
+    do
+        echo "${i}: ${model}"
+        i=$((i+1))
+    done
+    i=$((i-1))
+    echo "Enter digit of the device you want to select: "
+    read selection
+    echo "your enter: ${selection}"
+    
+    re="^[0-${i}]$"
+    if [[ ${selection} =~ $re ]]; then
+        echo "device:" ${device[${selection}]}
+        serial=${device[$selection]}
+    else
+        echo "wrong selection"
+        exit 0
+    fi
+fi
+
+# get delete character's count
+if [ "$#" -ne 1 ]; then
+    count=20
+else
+    count=$1
+fi
+
+# generate command
+cmd="input keyevent"
+for ((i=0;i<${count};i=i+1))
+do
+    cmd="$cmd KEYCODE_DEL"
+done
+
+# move to the end of the edittext
+adb -s $serial shell input keyevent KEYCODE_MOVE_END
+# delete characters
+adb -s $serial shell $cmd
